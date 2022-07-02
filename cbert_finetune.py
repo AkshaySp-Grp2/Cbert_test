@@ -138,7 +138,7 @@ def main():
         avg_loss = 0.
 
         for step, batch in enumerate(train_dataloader):
-            batch = tuple(t.cuda() for t in batch)
+            batch = tuple(t for t in batch)
             _, input_ids, input_mask, segment_ids, masked_ids = batch
             """train generator at each batch"""
             optimizer.zero_grad() 
