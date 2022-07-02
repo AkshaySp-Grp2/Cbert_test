@@ -142,8 +142,7 @@ def main():
             _, input_ids, input_mask, segment_ids, masked_ids = batch
             """train generator at each batch"""
             optimizer.zero_grad() 
-            outputs = model(input_ids, input_mask, segment_ids,
-                    masked_lm_labels=masked_ids)
+            outputs = model(input_ids, input_mask, segment_ids, mask_token = masked_ids)
             loss = outputs[0]
             loss.backward()
             avg_loss += loss.item()
