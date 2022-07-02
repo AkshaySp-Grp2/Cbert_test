@@ -67,12 +67,12 @@ class AugProcessor(DataProcessor):
     def get_train_examples(self, data_dir):
         """See base calss."""
         return self._create_examples(
-            self._read_tsv(os.path.join("/content/Cbert_test/"+data_dir, "train.tsv")), "train")
+            self._read_tsv(os.path.join("\\content\\Cbert_test\\"+data_dir, "train.tsv")), "train")
 
     def get_dev_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-            self._read_tsv(os.path.join("/content/Cbert_test/"+data_dir, "dev.tsv")), "dev")
+            self._read_tsv(os.path.join("\\content\\Cbert_test\\"+data_dir, "dev.tsv")), "dev")
     
     def get_labels(self, name):
         """add your dataset here"""

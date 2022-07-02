@@ -112,7 +112,7 @@ def main():
         args.train_batch_size, args.num_train_epochs, tokenizer, device)
 
     ## if you have a GPU, put everything on cuda
-    model.cuda()
+    # model.cuda()
 
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", len(train_features))
