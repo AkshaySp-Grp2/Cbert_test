@@ -12,9 +12,10 @@ from tqdm import tqdm, trange
 
 import numpy as np
 import torch
+from transformers import get_linear_schedule_with_warmup as WarmupLinearSchedule
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 
-from transformers import BertTokenizer, BertModel, BertForMaskedLM, AdamW, WarmupLinearSchedule
+from transformers import BertTokenizer, BertModel, BertForMaskedLM, AdamW
 #import train_text_classifier_new
 
 import cbert_utils
