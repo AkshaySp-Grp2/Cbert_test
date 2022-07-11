@@ -144,6 +144,7 @@ def main():
             optimizer.zero_grad() 
             outputs = model(input_ids, input_mask, segment_ids,  labels = masked_ids)
             loss = outputs[0]
+            print(loss)
             loss.backward()
             avg_loss += loss.item()
             optimizer.step()
