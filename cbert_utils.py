@@ -29,12 +29,12 @@ class InputExample(object):
 class InputFeature(object):
     """A single set of features of data."""
 
-    def __init__(self, init_ids, input_ids, input_mask, segment_ids, masked_lm_labels):
+    def __init__(self, init_ids, input_ids, input_mask, segment_ids, labels):
         self.init_ids = init_ids
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
-        self.masked_lm_labels = masked_lm_labels
+        self.labels = labels
 
 class DataProcessor(object):
     """Base class for data converters for sequence classification data sets."""
@@ -110,7 +110,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         # type_ids: 0     0  0    0    0     0       0 0    
         tokens_a = tokenizer._tokenize(example.text_a)
         tokens_label = label_map[example.label]
-        tokens, init_ids, input_ids, input_mask, segment_ids, masked_lm_labels = \
+        tokens, init_ids, input_ids, input_mask, segment_ids, labels = \
             extract_features(tokens_a, tokens_label, max_seq_length, tokenizer)
         
         """convert label to label_id"""
@@ -123,7 +123,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
                 input_ids=input_ids,
                 input_mask=input_mask,
                 segment_ids=segment_ids,
-                masked_lm_labels=masked_lm_labels))
+                labels=labels))
 
         """print examples"""
         if ex_index < 5:
@@ -135,7 +135,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
             logger.info("[cbert] input_ids: %s" % " ".join([str(x) for x in input_ids]))
             logger.info("[cbert] input_mask: %s" % " ".join([str(x) for x in input_mask]))
             logger.info("[cbert] segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
-            logger.info("[cbert] masked_lm_labels: %s" % " ".join([str(x) for x in masked_lm_labels]))
+            logger.info("[cbert] labels: %s" % " ".join([str(x) for x in labels]))
     return features
 
 def construct_train_dataloader(train_examples, label_list, max_seq_length, train_batch_size, num_train_epochs, tokenizer, device):
@@ -151,7 +151,7 @@ def construct_train_dataloader(train_examples, label_list, max_seq_length, train
     all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long, device=device)
     all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long, device=device)
     all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long, device=device)
-    all_masked_lm_labels = torch.tensor([f.masked_lm_labels for f in train_features], dtype=torch.long, device=device)
+    all_masked_lm_labels = torch.tensor([f.labels for f in train_features], dtype=torch.long, device=device)
     
     tensor_dataset = TensorDataset(all_init_ids, all_input_ids, all_input_mask, 
         all_segment_ids, all_masked_lm_labels)
@@ -197,9 +197,9 @@ def extract_features(tokens_a, tokens_label, max_seq_length, tokenizer):
     masked_lm_probs = 0.15
     max_predictions_per_seq = 20
     rng = random.Random(12345)
-    original_masked_lm_labels = [-1] * max_seq_length
+    original_masked_lm_labels = [-100] * max_seq_length
     (output_tokens, masked_lm_positions, 
-    masked_lm_labels) = create_masked_lm_predictions(
+    labels) = create_masked_lm_predictions(
             tokens, masked_lm_probs, original_masked_lm_labels, max_predictions_per_seq, rng, tokenizer)
     input_ids = convert_tokens_to_ids(output_tokens, tokenizer)
 
@@ -219,7 +219,7 @@ def extract_features(tokens_a, tokens_label, max_seq_length, tokenizer):
     assert len(input_mask) == max_seq_length
     assert len(segment_ids) == max_seq_length
 
-    return tokens, init_ids, input_ids, input_mask, segment_ids, masked_lm_labels
+    return tokens, init_ids, input_ids, input_mask, segment_ids, labels
 
 def convert_tokens_to_ids(tokens, tokenizer):
     """Converts tokens into ids using the vocab."""
@@ -229,7 +229,7 @@ def convert_tokens_to_ids(tokens, tokenizer):
         ids.append(token_id)
     return ids
 
-def create_masked_lm_predictions(tokens, masked_lm_probs, masked_lm_labels, 
+def create_masked_lm_predictions(tokens, masked_lm_probs, labels, 
                                  max_predictions_per_seq, rng, tokenizer):
     """Creates the predictions for the masked LM objective."""
 
@@ -268,7 +268,7 @@ def create_masked_lm_predictions(tokens, masked_lm_probs, masked_lm_labels,
             else:
                 masked_token = tokens[cand_indexes[rng.randint(0, len_cand - 1)]]
                 
-        masked_lm_labels[index] = convert_tokens_to_ids([tokens[index]], tokenizer)[0]
+        labels[index] = convert_tokens_to_ids([tokens[index]], tokenizer)[0]
         output_tokens[index] = masked_token
         masked_lm_positions.append(index)
-    return output_tokens, masked_lm_positions, masked_lm_labels
+    return output_tokens, masked_lm_positions, labels
