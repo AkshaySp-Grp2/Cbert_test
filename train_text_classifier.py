@@ -6,7 +6,7 @@ import json
 import os
 import numpy
 
-import cupy
+import cupy-cuda80
 import nets as bilm_nets
 import chainer
 from chainer import training
